@@ -3,11 +3,11 @@ game
 
 This project implements the game of Breakout.
 
-Name: 
+Name: Erie Seong Ho Han
 
 ### Timeline
 
-Start Date: 
+Start Date: August 30th, 2019
 
 Finish Date: 
 

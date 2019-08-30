@@ -1,0 +1,78 @@
+1.
+Among the variants of breakout, I personally found Bricks n Balls the most interesting.
+Aiming mechanism from Bubble Shooter Game grasped my attention, and I actually downloaded a Brick n Ball game and played it.
+It turned out to be extremely fun, as I constantly had to think about taking a shot that would make my next few shots easier.
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+2. Different levels
+First level will be an easy tutorial. There will just be a line of bricks with one life, and the ball will move slowly.
+Second level will contain some bricks with two lives, and the ball will move faster. There will be more bricks.
+Third level will contain some bricks with three or four lives, and the ball will move faster.
+Fourth level will contain some bricks that move horizontally.
+
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+3. Types of Bricks
+Some bricks will have one life. When the level gets higher, there will be bricks with two, three, or four lives.
+There will be permanent bricks when the player reaches higher levels.
+At the highest level, there will be bricks that moves horizontally, making it hard for the player to hit the brick.
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+4. Power Ups
+When a brick disappears, it may turn into a power-up item which will slowly drop towards the lower boundary.
+There will be a cheat key that increases the possibility of each brick turning into a power-up item.
+If the player fails to get the item with the paddle and the item drops below the lower boundary, it's gone.
+
+There will be five types of power-ups.
+
+First power-up will give an extra life to the player.
+
+Second power-up will give players 3~5 "Bombs". Clicking the space bar will make the paddle shoot a bomb (probably circular) upwards.
+If the bomb hits a brick, it will take one life from that brick.
+However, if the player makes a mistake and the bomb hits the ball before it hits a brick, the ball will explode and the player loses a life.
+
+Third power-up will make the paddle longer. The effect will last until the player gets another power-up with different effect.
+
+Fourth power-up will form one or two more balls.
+
+Fifth power-up will give the paddle the 'magnetic power'. That power will disappear if the player gets another power-up.
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+5. Cheat Keys
+
+1, 2, 3 -> move to the corresponding level.
+L -> extra life.
+B -> extra bomb.
+P -> Makes the paddle longer.
+M -> Gives 'magnetic power' to the paddle. Press M again to turn it off.
+I -> Items that give power-up will appear more often. Press I again to cancel the effect.
+R -> puts paddle and ball to their starting position. If there were more than one balls before pressing this key,
+    there will be only one ball left after pressing this key.
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+6. Additions to the program.
+
+i. Paddle
+Hitting the ball with central part of the paddle will make the ball bounce normally.
+Hitting the ball with the left/right part of the paddle will make the ball bounce more toward left/right(15~25 degrees more).
+
+Getting the magnetic power-up or pressing 'M' will give the paddle the magnetic power. The paddle will hold the ball,
+and release the ball when the player presses the 'enter' key.
+
+
+ii. extra plans
+
+At the start of a new level, or when the player loses a life, the ball will be at the center of the paddle. Only when the player presses
+the required key (enter or space) will the ball start moving.
+
+The angle of the ball's direction will be random to make the game more fun. But the ball will not go downwards because that will
+force the player to lose a life!x
+
+
+iii.
+
