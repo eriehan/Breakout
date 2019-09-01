@@ -6,10 +6,15 @@ It turned out to be extremely fun, as I constantly had to think about taking a s
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 2. Different levels
-First level will be an easy tutorial. There will just be a line of bricks with one life, and the ball will move slowly.
-Second level will contain some bricks with two lives, and the ball will move faster. There will be more bricks.
-Third level will contain some bricks with three or four lives, and the ball will move faster.
-Fourth level will contain some bricks that move horizontally.
+In the resources directory, there are 5 text files, each showing what each level will look like.
+0 -> empty
+1 -> brick has one life
+2 -> brick has two lives
+3 -> brick has three lives
+4 -> brick has four lives
+5 -> brick has five lives
+P -> permanent brick
+M -> brick that moves. Has one life
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------
@@ -32,7 +37,7 @@ First power-up will give an extra life to the player.
 
 Second power-up will give players 3~5 "Bombs". Clicking the space bar will make the paddle shoot a bomb (probably circular) upwards.
 If the bomb hits a brick, it will take one life from that brick.
-However, if the player makes a mistake and the bomb hits the ball before it hits a brick, the ball will explode and the player loses a life.
+However, if the player makes a mistake and the bomb hits the ball, the ball will disappear and the player loses a life.
 
 Third power-up will make the paddle longer. The effect will last until the player gets another power-up with different effect.
 
@@ -44,14 +49,17 @@ Fifth power-up will give the paddle the 'magnetic power'. That power will disapp
 
 5. Cheat Keys
 
-1, 2, 3 -> move to the corresponding level.
+1, 2, 3, 4 -> move to the corresponding level.
 L -> extra life.
 B -> extra bomb.
-P -> Makes the paddle longer.
+P -> Makes the paddle longer. Press P again and it will be even longer. Pressing P again will make it return to its original length
 M -> Gives 'magnetic power' to the paddle. Press M again to turn it off.
 I -> Items that give power-up will appear more often. Press I again to cancel the effect.
 R -> puts paddle and ball to their starting position. If there were more than one balls before pressing this key,
     there will be only one ball left after pressing this key.
+F -> Paddle becomes faster. Press F again to cancel the effect.
+W -> Paddle will warp from one side of the screen to the other when it reaches the edge. Press W again to cancel the effect.
+
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -59,20 +67,17 @@ R -> puts paddle and ball to their starting position. If there were more than on
 
 i. Paddle
 Hitting the ball with central part of the paddle will make the ball bounce normally.
-Hitting the ball with the left/right part of the paddle will make the ball bounce more toward left/right(15~25 degrees more).
+Hitting the ball with the left/right part of the paddle will make the ball bounce more toward left/right(probably 10~20 degrees more).
 
 Getting the magnetic power-up or pressing 'M' will give the paddle the magnetic power. The paddle will hold the ball,
 and release the ball when the player presses the 'enter' key.
+
+There will be a cheat key that lets the paddle warp from one side to the other when it reaches the edge of the screen.
+
 
 
 ii. extra plans
 
 At the start of a new level, or when the player loses a life, the ball will be at the center of the paddle. Only when the player presses
-the required key (enter or space) will the ball start moving.
-
-The angle of the ball's direction will be random to make the game more fun. But the ball will not go downwards because that will
-force the player to lose a life!x
-
-
-iii.
+the required key (enter or space) will the ball start moving. The paddle will shoot the ball at a random direction.
 
