@@ -78,6 +78,6 @@ There will be a cheat key that lets the paddle warp from one side to the other w
 
 ii. extra plans
 
-At the start of a new level, or when the player loses a life, the ball will be at the center of the paddle. Only when the player presses
-the required key (enter or space) will the ball start moving. The paddle will shoot the ball at a random direction to make the game fun.
+At the start of a new level, or when the player loses a life, the ball will be at the center of the paddle.
+The paddle will shoot the ball at a random direction to make the game fun.
 
