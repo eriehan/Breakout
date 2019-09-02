@@ -3,9 +3,10 @@ package BreakOut;
 import javafx.scene.image.Image;
 
 public class Bomb extends Sprite {
+    private static final double BOMB_SPEED = 100.0;
+
     private boolean alive;
     private double elapsedTime;
-    public static final double BOMB_SPEED = 3.0;
 
     public Bomb(Image image, double elapsedTime) {
         super(image);
@@ -31,7 +32,5 @@ public class Bomb extends Sprite {
     }
 
     @Override
-    public boolean isAlive() {
-        return false;
-    }
+    public boolean isAlive() { return alive; }
 }
