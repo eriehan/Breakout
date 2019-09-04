@@ -22,26 +22,13 @@ public class Item extends Sprite {
 
     @Override
     public void collide(Sprite other) {
-        if(other instanceof Paddle && this.getY() > other.getY() - getRadius() * 2 &&
-                this.getY() < other.getY() - getRadius() * 2 + ITEM_SPEED * elapsedTime) {
-            if(this.getX() > other.getX() - getRadius() && this.getX() < other.getX() + other.getWidth() - getRadius()) {
-
-            }
-        }
+        alive = other instanceof Paddle && this.intersects(other.getBoundsInLocal());
     }
 
     @Override
-    public void offBoundary() {
-        if(this.getY() > getScreenHeight()) {
-            alive = false;
-        }
-    }
+    public void offBoundary() { alive = this.getY() <= BreakOutGame.MAX_Y_POS; }
 
-    public boolean isAlive() {
-        return alive;
-    }
-
-    public double getRadius() { return getWidth() * 2/5; }
+    public boolean isAlive() {return alive; }
 
     public char getType() {return type;}
 

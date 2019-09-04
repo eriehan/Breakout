@@ -9,11 +9,18 @@ public class Ball extends Sprite {
     private static final int THIRD_QUADRANT = 270;
     private static final int FOURTH_QUADRANT = 360;
     private static final int ONE_AND_HALF_CYCLE = 540;
-    public static final double BALL_SPEED_1 = 150;
-    public static final double BALL_SPEED_2 = 200;
-    public static final double BALL_SPEED_3 = 240;
-    public static final double BALL_SPEED_4 = 270;
-    public static final double BALL_SPEED_5 = 300;
+    private static final double BALL_SPEED_1 = 150;
+    private static final double BALL_SPEED_2 = 200;
+    private static final double BALL_SPEED_3 = 240;
+    private static final double BALL_SPEED_4 = 270;
+    private static final double BALL_SPEED_5 = 300;
+    private static final double MIN_ANGLE = 20.0;
+    private static final double MAX_ANGLE = 160.0;
+    private static final double FIRST_RATIO = 0.2;
+    private static final double SECOND_RATIO = 0.4;
+    private static final double THIRD_RATIO = 0.6;
+    private static final double FOURTH_RATIO = 0.8;
+    private static final double BOUNCING_ANGLE_ADDITION = 10.0;
 
     private double speed;
     private double vX;
@@ -23,14 +30,17 @@ public class Ball extends Sprite {
     private int directionY;
     private double elapsedTime;
     private boolean alive;
-    private int level;
+    private boolean turnedX = false;
+    private boolean turnedY = false;
+    private boolean turnedTwice = false;
+    private int prevBrickRow;
+    private int prevBrickCol;
 
-    public Ball(Image image, int level, double angle, double elapsedTime) {
+    public Ball(Image image, double angle, double elapsedTime) {
         super(image);
         speed = 0;
         setAngle(angle);
         this.elapsedTime = elapsedTime;
-        this.level = level;
         alive = true;
     }
 
@@ -54,89 +64,101 @@ public class Ball extends Sprite {
     public void offBoundary() {
         if(this.getX() < 0 || getX() > getScreenWidth() - getWidth()) {
             reverseX();
-        } else if(this.getY() < 0) {
+        } else if(this.getY() < BreakOutGame.MIN_Y_POS) {
             reverseY();
-        } else if(this.getY() > getScreenHeight()) {
-            alive = false;
-        }
+        } else  { alive = this.getY() < BreakOutGame.MAX_Y_POS; }
+        hitBrickInit();
     }
 
-    public void collide(Paddle other) {
-        if(this.getY() >= other.getY() - getRadius() * 2 && this.getY() < other.getY() - getRadius() * 2 + vY * elapsedTime) {
-            if (this.getX() > other.getX() - getRadius() &&
-                    this.getX() < other.getX() + other.getWidth() - getRadius()) {
+    private void collide(Paddle other) {
+        if(Math.abs(getCenterY() - (other.getY()-getRadius()/2)) <= vY * elapsedTime / 2) {
+            if (Math.abs(getCenterX() - other.getCenterX()) <= getRadius() + other.getWidth()/2) {
                 reverseY();
+                if(!other.getNormalBounce()) {
+                    changeAngle(other);
+                }
+                if(other.isMagnetic()) {
+                    speed = 0;
+                    vX = 0; vY = 0;
+                }
             }
         }
     }
 
-    public void collide(Brick other) {
-        if(getY() > other.getY() - getRadius() * 2 && getY() < other.getY() + other.getHeight()) {
-            if(getX() > other.getX() - getRadius() && getX() < other.getX() + other.getWidth() - getRadius()) {
-                bounceOnBrick(other);
-                other.setLife(other.getLife() - 1);
+    private void collide(Brick other) {
+        if(Math.abs(getCenterY() - other.getCenterY()) <= other.getHeight()/2 + getRadius()) {
+            if(Math.abs(getCenterX() - other.getCenterX()) <= getRadius() + other.getWidth()/2) {
+                if(turnedTwice) {threeBricksHit();}
+                else if(turnedY || turnedX) {twoBricksHit(other);}
+                else {bounceOnBrick(other);}
+
+                other.brickHit();
+                prevBrickRow = other.getRow();
+                prevBrickCol = other.getCol();
             }
         }
     }
 
     private void bounceOnBrick(Brick other) {
-        double prevX = getX() - vX;
-        double prevY = getY() + vY;
-
+        double prevX = getCenterX() - vX * elapsedTime * directionX;
+        double prevY = getCenterY() - vY * elapsedTime * directionY;
         System.out.println(prevX + ", " + prevY + ", " + angle);
-        System.out.println(getX() + ", " + getY());
 
-        double relativeAngle = 0.0;
-
-        if(angle <= FIRST_QUADRANT) {
-            relativeAngle = Math.toDegrees(Math.atan2(prevY - (other.getY() + other.getHeight() + getRadius()),
-                    other.getX() - getRadius() - prevX));
-            System.out.println((other.getY() + other.getHeight() + getRadius()) + ", " + (other.getX() - getRadius()));
-            System.out.println(relativeAngle);
-
-            if(relativeAngle > angle) {
-                reverseY();
-            } else { reverseX(); }
+        if(Math.abs(prevX - other.getCenterX()) < (other.getWidth()/2 + getRadius())) {
+            reverseY(); System.out.println(other.getRow() + " "+ other.getCol() + ", Y");
         }
-
-        else if(angle <= SECOND_QUADRANT) {
-            relativeAngle = Math.toDegrees(Math.atan2(prevY - (other.getY() + other.getHeight() + getRadius()),
-                    other.getX() + other.getWidth() + getRadius() - prevX));
-            System.out.println((other.getY() + other.getHeight() + getRadius()) + ", " + (other.getX() + other.getWidth() + getRadius()));
-            System.out.println(relativeAngle);
-
-            if(relativeAngle < angle && relativeAngle > 0) {
-                reverseY();
-            } else { reverseX(); }
-        }
-
-        else if(angle <= THIRD_QUADRANT) {
-            relativeAngle = Math.toDegrees(Math.atan2((other.getY() - getRadius()) - prevY,
-                    prevX - (other.getX() + other.getWidth() + getRadius())));
-            System.out.println((other.getY() - getRadius()) + ", " + (other.getX() + other.getWidth() + getRadius()));
-            System.out.println(relativeAngle);
-
-            if(relativeAngle > angle - SECOND_QUADRANT) {
-                reverseY();
-            } else { reverseX(); }
+        else if(Math.abs(prevY - other.getCenterY()) < (other.getHeight()/2 + getRadius())) {
+            reverseX(); System.out.println(other.getRow() + " "+ other.getCol() + ", X");
         }
         else {
-            relativeAngle = Math.toDegrees(Math.atan2((other.getY() - getRadius()) - prevY,
-                    prevX - (other.getX() - getRadius())));
-            System.out.println((other.getY() - getRadius()) + ", " + (other.getX() - getRadius()));
-            System.out.println(relativeAngle);
-
-            if (relativeAngle < angle - SECOND_QUADRANT && relativeAngle > 0) {
-                reverseY();
-            } else { reverseX(); }
+            System.out.println(getCenterX() + ", " + getCenterY() + ", " + other.getRow() + ", " + other.getCol());
+            if (angle <= FIRST_QUADRANT) {
+                double relativeAngle = slopeBetweenTwoPoints(prevX, other.getX(), other.getY() + other.getHeight(), prevY);
+                if (relativeAngle > angle && angle < SECOND_QUADRANT) { reverseY(); }
+                else { reverseX(); }
+            } else if (angle <= SECOND_QUADRANT) {
+                double relativeAngle = slopeBetweenTwoPoints(prevX, other.getX() + other.getWidth(),
+                        other.getY() + other.getHeight(), prevY);
+                if (relativeAngle < angle && relativeAngle > 0) { reverseY(); }
+                else { reverseX(); }
+            } else if (angle <= THIRD_QUADRANT) {
+                double relativeAngle = slopeBetweenTwoPoints(prevX, other.getX() + other.getWidth(), other.getY(), prevY);
+                if (relativeAngle > angle) { reverseY(); }
+                else { reverseX(); }
+            } else {
+                double relativeAngle = slopeBetweenTwoPoints(prevX, other.getX(), other.getY(), prevY);
+                if (relativeAngle < angle && relativeAngle > SECOND_QUADRANT) { reverseY(); }
+                else { reverseX(); }
+            }
         }
+    }
+
+    private void twoBricksHit(Brick other) {
+        if(prevBrickCol == other.getCol() && turnedY) {
+            reverseX();
+            reverseY();
+        } else if(prevBrickRow == other.getRow() && turnedX) {
+            reverseX();
+            reverseY();
+        } else if(prevBrickRow != other.getRow() && prevBrickCol != other.getCol()) {
+            if(turnedY) {reverseX();}
+            else if(turnedX) {reverseY();}
+        }
+        turnedTwice = true;
+    }
+
+    private void threeBricksHit() {
+        if(!turnedX) {reverseX();}
+        else if(!turnedY) {reverseY();}
     }
 
     public void reverseX() {
         setAngle((ONE_AND_HALF_CYCLE - angle) % FOURTH_QUADRANT);
+        turnedX = true;
     }
     public void reverseY() {
         setAngle(FOURTH_QUADRANT - angle);
+        turnedY = true;
     }
 
     public void setAngle(double angle) {
@@ -163,23 +185,41 @@ public class Ball extends Sprite {
     }
 
     private void speedsFromAngle(double angle) {
-        vX = Math.abs(speed * Math.cos(Math.toRadians(angle)));
-        vY = Math.abs(speed * Math.sin(Math.toRadians(angle)));
+        vX = Math.abs(speed * Math.cos(angleRadian()));
+        vY = Math.abs(speed * Math.sin(angleRadian()));
     }
 
     public boolean isMoving() {return !(speed==0);}
+    public boolean isAlive() { return alive; }
+    public double getRadius() { return getWidth()*2/5; }
+    public double getAngle() {return angle;}
 
-    public boolean isAlive() {
-        return alive;
-    }
-
-    public double getRadius() {
-        return getWidth()*2/5;
-    }
-
-    public void startMoving() {
-        this.speed = levelSpeed(level);
+    public void startMoving(int level) {
+        speed = levelSpeed(level);
         speedsFromAngle(angle);
+    }
+
+    private double angleRadian() {return Math.toRadians(angle);}
+    private double slopeBetweenTwoPoints(double x1, double x2, double y1, double y2) {
+        double degree = Math.toDegrees(Math.atan((y2 - y1) / (x2 - x1)));
+        if(degree > 0) {return degree;}
+        else {return FOURTH_QUADRANT + degree;}
+    }
+
+    public void setAlive(boolean alive) {this.alive = alive;}
+
+    public void hitBrickInit() {turnedX = false; turnedY = false; turnedTwice = false;}
+
+    private void changeAngle(Paddle other) {
+        double ratio = (getCenterX() - other.getX()) / other.getWidth();
+
+        if(ratio < FIRST_RATIO) {setAngle(angle + 2 * BOUNCING_ANGLE_ADDITION);}
+        else if(ratio < SECOND_RATIO) {setAngle(angle + BOUNCING_ANGLE_ADDITION);}
+        else if(ratio>THIRD_RATIO && ratio<FOURTH_RATIO) {setAngle(angle - BOUNCING_ANGLE_ADDITION);}
+        else if(ratio > FOURTH_RATIO) {setAngle(angle - 2 * BOUNCING_ANGLE_ADDITION);}
+
+        if(angle < MIN_ANGLE) {setAngle(MIN_ANGLE);}
+        else if(angle > MAX_ANGLE) {setAngle(MAX_ANGLE);}
     }
 
     private double getScreenWidth() { return getParent().getScene().getWidth();}

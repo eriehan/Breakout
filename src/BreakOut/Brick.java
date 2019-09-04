@@ -5,18 +5,21 @@ import javafx.scene.image.Image;
 public class Brick extends Sprite {
 
     private static final double BRICK_SPEED = 80.0;
-    private static final double BRICK_WIDTH = 55.0;
+    private static final double BRICK_WIDTH = 67.0;
     private static final double BRICK_HEIGHT = 20.0;
-    private static final double MARGIN_BETWEEN_BRICKS = 5.0;
-    private static final double FIRST_COLUMN = 30.0;
-    private static final double FIRST_ROW = 30.0;
+    private static final double MARGIN_BETWEEN_BRICKS = 1.0;
+    private static final double FIRST_COLUMN = 1.0;
+    private static final double FIRST_ROW = 70.0;
 
     private double elapsedTime;
     private double speed;
     private int directionX;
-    private int life;
+    private int brickLife;
+    private boolean hit;
+    private int row;
+    private int col;
 
-    public Brick(Image image, boolean isMoving, int life, int row, int col, double elapsedTime) {
+    public Brick(Image image, boolean isMoving, int brickLife, int row, int col, double elapsedTime) {
         super(image);
 
         if(isMoving) {speed = BRICK_SPEED;}
@@ -27,17 +30,16 @@ public class Brick extends Sprite {
         this.setFitHeight(BRICK_HEIGHT);
         this.setX(col * (BRICK_WIDTH + MARGIN_BETWEEN_BRICKS) + FIRST_COLUMN);
         this.setY(row * (BRICK_HEIGHT + MARGIN_BETWEEN_BRICKS) + FIRST_ROW);
-        this.life = life;
+        this.brickLife = brickLife;
         this.elapsedTime = elapsedTime;
+        this.row = row;
+        this.col = col;
+        hit = false;
     }
 
     @Override
     public void move() {
         this.setX(this.getX() + speed * directionX * elapsedTime);
-    }
-
-    @Override
-    public void collide(Sprite other) {
     }
 
     @Override
@@ -48,16 +50,20 @@ public class Brick extends Sprite {
     }
 
     @Override
-    public boolean isAlive() { return !(life == 0); }
+    public boolean isAlive() { return !hit; }
 
-    @Override
-    public double getWidth() {return BRICK_WIDTH;}
+    public void brickHit() {
+        if(brickLife>0) {
+            hit = true;
+            brickLife--;
+        }
+    }
 
-    @Override
-    public double getHeight() {return BRICK_HEIGHT;}
-
-    public void setLife(int life) {this.life = life;}
-    public int getLife() {return life;}
+    public void setBrickLife(int brickLife) {this.brickLife = brickLife;}
+    public int getBrickLife() {return brickLife;}
+    public int getRow() {return row;}
+    public int getCol() {return col;}
+    public boolean isMoving() {return !(speed==0);}
 
     private double getScreenWidth() {return getParent().getScene().getWidth();}
 }

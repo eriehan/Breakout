@@ -5,18 +5,21 @@ import javafx.scene.image.Image;
 
 public class Paddle extends Sprite {
 
-    public static final int PADDLE_NORMAL_LENGTH = 80;
-    public static final int PADDLE_SHORT_LENGTH = 60;
-    public static final int PADDLE_HEIGHT = 15;
-    public static final double STRETCH_WIDTH = 1.5;
-    public static final double CONTRACT_WIDTH = 2.25;
+    private static final int PADDLE_NORMAL_LENGTH = 80;
+    private static final int PADDLE_SHORT_LENGTH = 60;
+    private static final int PADDLE_HEIGHT = 15;
+    private static final double STRETCH_WIDTH = 1.5;
+    private static final double CONTRACT_WIDTH = 2.25;
 
-    private int speed = 0;
+
+    private int speed;
     private double elapsedTime;
     private double width;
-    private boolean warp;
+    private boolean warp = false;
+    private boolean normalBounce = false;
+    private boolean magnetic = false;
     private int stretched;
-
+    private String itemType = "";
 
     public Paddle(Image image, int level, double elapsedTime) {
         super(image);
@@ -24,7 +27,7 @@ public class Paddle extends Sprite {
         setFitWidth(width);
         this.elapsedTime = elapsedTime;
         this.setFitHeight(PADDLE_HEIGHT);
-        warp = false;
+        speed = 0;
     }
 
     @Override
@@ -32,28 +35,19 @@ public class Paddle extends Sprite {
 
     @Override
     public void collide(Sprite other) {
-        if(other instanceof Item && ((Item) other).getType() == 'P') {
-            stretchPaddle(false);
-        }
+        if(other instanceof Item) { itemType += " " + ((Item) other).getType(); }
     }
 
     @Override
     public void offBoundary() {
         double screenWidth = getScreenWidth();
         if(!warp) {
-            if (this.getX() < 0) {
-                this.setX(0);
-            } else if (this.getX() > screenWidth - width) {
-                this.setX(screenWidth - width);
-            }
+            if (this.getX() < 0) { this.setX(0); }
+            else if (this.getX() > screenWidth - width) { this.setX(screenWidth - width); }
         }
         else {
-            if(this.getX() < 0 - width) {
-                this.setX(screenWidth);
-            }
-            else if(this.getX() > screenWidth) {
-                this.setX(0 - width);
-            }
+            if(this.getX() < 0 - width) { this.setX(screenWidth); }
+            else if(this.getX() > screenWidth) { this.setX(0 - width); }
         }
     }
 
@@ -61,6 +55,7 @@ public class Paddle extends Sprite {
     public boolean isAlive() { return true; }
 
     public void setWidthByLevel(int level) {
+        stretched = 0;
         if(level <= 3) { width = PADDLE_NORMAL_LENGTH;}
         else { width = PADDLE_SHORT_LENGTH;}
         setFitWidth(width);
@@ -69,6 +64,7 @@ public class Paddle extends Sprite {
     public void setSpeed(int speed) { this.speed = speed; }
 
     public void changeWarp() { this.warp = !warp; }
+    public boolean getWarp() {return warp;}
 
     public void stretchPaddle(boolean cheat) {
         if(stretched <= 1) {
@@ -80,14 +76,21 @@ public class Paddle extends Sprite {
     }
 
     public void contractPaddle() {
-        if(stretched == 1) {
-            width /= STRETCH_WIDTH;
-        } else if(stretched == 2) {
-            width /= CONTRACT_WIDTH;
-        }
+        if(stretched == 1) { width /= STRETCH_WIDTH; }
+        else if(stretched == 2) { width /= CONTRACT_WIDTH;}
         this.setFitWidth(width);
         stretched = 0;
     }
 
+    public void resetType() {itemType = "";}
+    public void changeNormalBounce() {normalBounce = !normalBounce;}
+    public boolean getNormalBounce() {return normalBounce;}
+    public boolean isMagnetic() {return magnetic;}
+    public void changeMagnetic(boolean cheat) {
+        if(cheat) {magnetic = !magnetic;}
+        else {magnetic = true;}
+    }
+
+    public String getItemType() {return itemType;}
     private double getScreenWidth() {return getParent().getScene().getWidth();}
 }

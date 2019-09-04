@@ -21,14 +21,16 @@ public class Bomb extends Sprite {
 
     @Override
     public void collide(Sprite other) {
-
+        alive = !(other instanceof Ball || other instanceof Brick);
+        if(!alive) {
+            if(other instanceof Ball) { ((Ball) other).setAlive(false);}
+            else { ((Brick) other).brickHit();}
+        }
     }
 
     @Override
     public void offBoundary() {
-        if(this.getY() < 0) {
-            alive = false;
-        }
+        alive = this.getY() > BreakOutGame.MIN_Y_POS;
     }
 
     @Override
