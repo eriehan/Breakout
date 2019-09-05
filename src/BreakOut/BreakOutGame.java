@@ -37,6 +37,8 @@ public class BreakOutGame extends Application {
     private static final int PADDLE_SPEED = 200;
     private static final double PADDLE_LOCATION_Y = 580;
     private static final double FIRST_QUADRANT = 90;
+    private static final int ITEM_POSSIBILITY_SMALL = 30;
+    private static final int ITEM_POSSIBILITY_LARGE = 35;
     private static final String PADDLE_IMAGE = "paddle.gif";
     private static final String BALL_IMAGE = "ball.gif";
     private static final String BRICK_IMAGE_1 = "brick1.gif";
@@ -47,6 +49,10 @@ public class BreakOutGame extends Application {
     private static final String BRICK_IMAGE_6 = "brick6.gif";
     private static final String BRICK_IMAGE_P = "brick8.gif";
     private static final String BRICK_IMAGE_M = "brick10.gif";
+    private static final String BOMB_IMAGE = "bomb.png";
+    private static final String LIFE_POWER = "lifepower.gif";
+    private static final String BOMB_POWER = "bombpower.gif";
+    private static final String PADDLE_POWER = "paddlelength.gif";
     private static final String LEVEL_ONE_MAP = "resources/lv1.txt";
     private static final String LEVEL_TWO_MAP = "resources/lv2.txt";
     private static final String LEVEL_THREE_MAP = "resources/lv3.txt";
@@ -55,15 +61,14 @@ public class BreakOutGame extends Application {
     public static final double MIN_Y_POS = 30;
     public static final double MAX_Y_POS = 620;
 
-
     private Scene myScene;
     private Group myRoot = new Group();
-    private HBox hbox = new HBox();
     private Paddle myPaddle;
     private ArrayList<Sprite> sprites = new ArrayList<>();
     private ArrayList<Sprite> spritesToBeRemoved = new ArrayList<>();
     private ArrayList<Brick> bricksToBeEdited = new ArrayList<>();
     private ArrayList<Brick> removableBricks = new ArrayList<>();
+    private ArrayList<Brick> removedBricks = new ArrayList<>();
     private ArrayList<Ball> balls = new ArrayList<>();
     private ArrayList<Label> labels = new ArrayList<>();
     private int life;
@@ -174,6 +179,7 @@ public class BreakOutGame extends Application {
     }
 
     private void updateSprites() {
+        generateItem();
         if(!bricksToBeEdited.isEmpty()) {
             editBricks();
         }
@@ -188,6 +194,7 @@ public class BreakOutGame extends Application {
         for (Sprite sprite : sprites) {
             sprite.update();
         }
+        itemEffects(myPaddle.getItemType());
         moveBallAlongPaddle();
         myPaddle.resetType();
     }
@@ -206,6 +213,7 @@ public class BreakOutGame extends Application {
                         bricksToBeEdited.add(new Brick(brickImage(brick.getBrickLife(), brick.isMoving()),
                                 brick.isMoving(), brick.getBrickLife(), brick.getRow(), brick.getCol(), SECOND_DELAY));
                     }
+                    else {removedBricks.add(brick);}
                 }
                 spritesToBeRemoved.add(sprite);
             }
@@ -283,6 +291,7 @@ public class BreakOutGame extends Application {
     private void editBricks() {
         for(Brick brick : bricksToBeEdited) {
             addSprite(brick);
+            removableBricks.add(brick);
         }
         bricksToBeEdited.clear();
     }
@@ -297,6 +306,8 @@ public class BreakOutGame extends Application {
                 balls.remove(ball);
             }
         }
+        removableBricks.clear();
+        bricksToBeEdited.clear();
     }
 
     private void clearBall() {
@@ -310,13 +321,16 @@ public class BreakOutGame extends Application {
             if (ball.getAngle() < FIRST_QUADRANT) {
                 generateBall(ball.getX() + ball.getWidth() / 2, ball.getY() + ball.getRadius() * 2,
                         ball.getAngle(), FIRST_QUADRANT * 1.5);
-            } else {
+            } else if(ball.getAngle() < FIRST_QUADRANT * 2){
                 generateBall(ball.getX() + ball.getWidth() / 2, ball.getY() + ball.getRadius() * 2,
                         FIRST_QUADRANT * 0.5, ball.getAngle());
+            } else {
+                generateBall(ball.getX() + ball.getWidth() / 2, ball.getY() + ball.getRadius() * 2,
+                        FIRST_QUADRANT * 0.5, FIRST_QUADRANT * 1.5);
             }
         }
         if (balls.size() <= 4) {
-            if (!ball.isMoving()) {
+            if (!ball.isMoving() || ball.getAngle() > FIRST_QUADRANT * 2) {
                 generateBall(ball.getX() + ball.getWidth() / 2, ball.getY() + ball.getRadius() * 2,
                         FIRST_QUADRANT * 0.5, FIRST_QUADRANT * 1.5);
             } else {
@@ -358,8 +372,19 @@ public class BreakOutGame extends Application {
         }
     }
 
+    private boolean allBallsMoving() {
+        for(Ball ball : balls) {
+            if(!(ball.isMoving())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void shootBomb() {
-        if(bombNum > 0) {
+        if(bombNum > 0 && allBallsMoving()) {
+            Bomb bomb = new Bomb(stringToImage(BOMB_IMAGE), SECOND_DELAY, myPaddle);
+            addSprite(bomb);
             bombNum--;
         }
     }
@@ -443,6 +468,43 @@ public class BreakOutGame extends Application {
 
         if(myPaddle.isMagnetic()) {labels.get(6).setText("Magnetic: on");}
         else {labels.get(6).setText("Magnetic: off");}
+    }
+
+    private void generateItem() {
+        for(Brick brick : removedBricks) {
+            generateItem(brick);
+        }
+        removedBricks.clear();
+    }
+
+    private void generateItem(Brick brick) {
+        int ranNum = (int) (Math.random() * 100 + 1);
+        if(ranNum<=ITEM_POSSIBILITY_SMALL/6) {generateItem('L', brick);}
+        else if(ranNum<=ITEM_POSSIBILITY_SMALL /2) {generateItem('P', brick); }
+        else if(ranNum<=ITEM_POSSIBILITY_SMALL) {generateItem('B', brick);}
+    }
+
+    private void generateItem(char type, Brick brick) {
+        Item item = new Item(itemImage(type), type, SECOND_DELAY);
+        addSprite(item);
+        item.setX(brick.getCenterX() - item.getWidth()/2);
+        item.setY(brick.getCenterY() - item.getHeight()/2);
+    }
+
+    private Image itemImage(char type) {
+        switch(type) {
+            case 'L' : return stringToImage(LIFE_POWER);
+            case 'P' : return stringToImage(PADDLE_POWER);
+            case 'B' : return stringToImage(BOMB_POWER);
+        }
+        return stringToImage(BOMB_POWER);
+    }
+
+    private void itemEffects(String type) {
+
+        if(type!=null) {
+            String[] effects = type.split(" ");
+        }
     }
 
     public static void main(String[] args) {

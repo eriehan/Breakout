@@ -102,16 +102,10 @@ public class Ball extends Sprite {
     private void bounceOnBrick(Brick other) {
         double prevX = getCenterX() - vX * elapsedTime * directionX;
         double prevY = getCenterY() - vY * elapsedTime * directionY;
-        System.out.println(prevX + ", " + prevY + ", " + angle);
 
-        if(Math.abs(prevX - other.getCenterX()) < (other.getWidth()/2 + getRadius())) {
-            reverseY(); System.out.println(other.getRow() + " "+ other.getCol() + ", Y");
-        }
-        else if(Math.abs(prevY - other.getCenterY()) < (other.getHeight()/2 + getRadius())) {
-            reverseX(); System.out.println(other.getRow() + " "+ other.getCol() + ", X");
-        }
+        if(Math.abs(prevX - other.getCenterX()) < (other.getWidth()/2 + getRadius())) { reverseY(); }
+        else if(Math.abs(prevY - other.getCenterY()) < (other.getHeight()/2 + getRadius())) { reverseX(); }
         else {
-            System.out.println(getCenterX() + ", " + getCenterY() + ", " + other.getRow() + ", " + other.getCol());
             if (angle <= FIRST_QUADRANT) {
                 double relativeAngle = slopeBetweenTwoPoints(prevX, other.getX(), other.getY() + other.getHeight(), prevY);
                 if (relativeAngle > angle && angle < SECOND_QUADRANT) { reverseY(); }
@@ -223,5 +217,4 @@ public class Ball extends Sprite {
     }
 
     private double getScreenWidth() { return getParent().getScene().getWidth();}
-    private double getScreenHeight() { return getParent().getScene().getHeight();}
 }

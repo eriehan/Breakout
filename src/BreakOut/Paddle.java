@@ -35,7 +35,9 @@ public class Paddle extends Sprite {
 
     @Override
     public void collide(Sprite other) {
-        if(other instanceof Item) { itemType += " " + ((Item) other).getType(); }
+        if(other instanceof Item && other.intersects(getBoundsInLocal())) {
+            itemType += ((Item) other).getType() + " ";
+        }
     }
 
     @Override

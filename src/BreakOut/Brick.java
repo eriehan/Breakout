@@ -59,7 +59,6 @@ public class Brick extends Sprite {
         }
     }
 
-    public void setBrickLife(int brickLife) {this.brickLife = brickLife;}
     public int getBrickLife() {return brickLife;}
     public int getRow() {return row;}
     public int getCol() {return col;}
