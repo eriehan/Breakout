@@ -11,7 +11,7 @@ Start Date: August 30th, 2019
 
 Finish Date: 
 
-Hours Spent: 12
+Hours Spent: 30
 
 ### Resources Used
 ball.gif, brick1.git, brick2.gif, brick3.gif, brick4.gif, brick5.gif, brick6.gif, brick8.gif, brick10.gif,

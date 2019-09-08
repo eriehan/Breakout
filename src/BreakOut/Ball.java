@@ -21,6 +21,8 @@ public class Ball extends Sprite {
     private static final double THIRD_RATIO = 0.6;
     private static final double FOURTH_RATIO = 0.8;
     private static final double BOUNCING_ANGLE_ADDITION = 10.0;
+    private static final double SPEED_CHANGE_RATIO = 1.3;
+    private static final double SPEED_MAX_CHANGE_RATIO = 1.5;
 
     private double speed;
     private double vX;
@@ -214,6 +216,20 @@ public class Ball extends Sprite {
 
         if(angle < MIN_ANGLE) {setAngle(MIN_ANGLE);}
         else if(angle > MAX_ANGLE) {setAngle(MAX_ANGLE);}
+    }
+
+    public void setSpeedSlower(int level) {
+        if(!(speed<levelSpeed(level)/SPEED_MAX_CHANGE_RATIO)) {
+            speed /= SPEED_CHANGE_RATIO;
+            speedsFromAngle(angle);
+        }
+    }
+
+    public void setSpeedFaster(int level) {
+        if(!(speed > levelSpeed(level)*SPEED_MAX_CHANGE_RATIO)) {
+            speed *= SPEED_CHANGE_RATIO;
+            speedsFromAngle(angle);
+        }
     }
 
     private double getScreenWidth() { return getParent().getScene().getWidth();}

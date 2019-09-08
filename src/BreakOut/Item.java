@@ -5,7 +5,7 @@ import javafx.scene.image.Image;
 public class Item extends Sprite {
 
     private static final double ITEM_SPEED = 80.0;
-    private static final double ITEM_WIDTH = 16.0;
+    private static final double ITEM_WIDTH = 20.0;
 
     private boolean alive;
     private double elapsedTime;

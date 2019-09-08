@@ -1,0 +1,13 @@
+1, 2, 3, 4, 5 -> Let me go to that level
+P -> Make my paddle longer...or maybe shorter!
+W -> Turn my paddle's warp power on/off!
+L -> (Cheat) Gimme more life!
+B -> (Cheat) Gimme more bombs!
+R -> (Cheat) Let me reset my position!
+N -> (Cheat) Gimme more balls!
+M -> Turn my paddle's magnetic power on/off!
+S -> Make my ball slower!
+Q -> Make my ball faster!
+I -> Gimme items more/less often!
+F -> Make my paddle faster...or maybe slower!
+

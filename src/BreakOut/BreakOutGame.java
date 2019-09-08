@@ -28,16 +28,15 @@ public class BreakOutGame extends Application {
 
     private static final String TITLE = "BRICKGAME BY ERIC";
     private static final double SCREEN_WIDTH = 480;
-    private static final double SCREEN_HEIGHT = 650;
+    private static final double SCREEN_HEIGHT = 690;
     private static final int FRAMES_PER_SECOND = 60;
     private static final int MILLISECOND_DELAY = 1000 / FRAMES_PER_SECOND;
     private static final double SECOND_DELAY = 1.0 / FRAMES_PER_SECOND;
     private static final Paint BACKGROUND = Color.rgb(244, 244, 248);
     private static final Paint HBOX_COLOR = Color.LIGHTBLUE;
-    private static final int PADDLE_SPEED = 200;
     private static final double PADDLE_LOCATION_Y = 580;
     private static final double FIRST_QUADRANT = 90;
-    private static final int ITEM_POSSIBILITY_SMALL = 30;
+    private static final int ITEM_POSSIBILITY_SMALL = 25;
     private static final int ITEM_POSSIBILITY_LARGE = 35;
     private static final String PADDLE_IMAGE = "paddle.gif";
     private static final String BALL_IMAGE = "ball.gif";
@@ -53,13 +52,16 @@ public class BreakOutGame extends Application {
     private static final String LIFE_POWER = "lifepower.gif";
     private static final String BOMB_POWER = "bombpower.gif";
     private static final String PADDLE_POWER = "paddlelength.gif";
+    private static final String SLOW_POWER = "slowpower.gif";
     private static final String LEVEL_ONE_MAP = "resources/lv1.txt";
     private static final String LEVEL_TWO_MAP = "resources/lv2.txt";
     private static final String LEVEL_THREE_MAP = "resources/lv3.txt";
     private static final String LEVEL_FOUR_MAP = "resources/lv4.txt";
     private static final String LEVEL_FIVE_MAP = "resources/lv5.txt";
+    private static final String EXPLANATIONS = "resources/explanations.txt";
     public static final double MIN_Y_POS = 30;
     public static final double MAX_Y_POS = 620;
+    public static final double ABILITY_Y_POS = 660;
 
     private Scene myScene;
     private Group myRoot = new Group();
@@ -71,7 +73,11 @@ public class BreakOutGame extends Application {
     private ArrayList<Brick> removedBricks = new ArrayList<>();
     private ArrayList<Ball> balls = new ArrayList<>();
     private ArrayList<Label> labels = new ArrayList<>();
+    private ArrayList<String> explanations = new ArrayList<>();
+    private int explanationIdx = 0;
+    private int explanationClock = 0;
     private int life;
+    private boolean moreItem = false;
     private int score;
     private int level = 1;
     private int bombNum;
@@ -83,8 +89,10 @@ public class BreakOutGame extends Application {
         myScene = setupGame(SCREEN_WIDTH, SCREEN_HEIGHT, BACKGROUND);
         HBox hbox = statsInit();
         HBox hbox2 = abilityLabelsInit();
+        HBox hbox3 = explanationLabelsInit();
         myRoot.getChildren().add(hbox);
         myRoot.getChildren().add(hbox2);
+        myRoot.getChildren().add(hbox3);
 
         primaryStage.setScene(myScene);
         primaryStage.setTitle(TITLE);
@@ -99,6 +107,7 @@ public class BreakOutGame extends Application {
 
     private Scene setupGame(double width, double height, Paint background) {
         Scene scene = new Scene(myRoot, width, height, background);
+        callExplanations();
 
         myPaddle = new Paddle(stringToImage(PADDLE_IMAGE), level, SECOND_DELAY);
         addSprite(myPaddle);
@@ -119,9 +128,9 @@ public class BreakOutGame extends Application {
 
     private void handleKeyInput(KeyCode code) {
         if (code == KeyCode.RIGHT) {
-            myPaddle.setSpeed(PADDLE_SPEED);
+            myPaddle.moveRight();
         } else if (code == KeyCode.LEFT) {
-            myPaddle.setSpeed(PADDLE_SPEED * (-1));
+            myPaddle.moveLeft();
         } else if (code == KeyCode.DIGIT1) {
             generateLevel(1);
         } else if (code == KeyCode.DIGIT2) {
@@ -146,22 +155,30 @@ public class BreakOutGame extends Application {
             moveBalls();
         } else if (code == KeyCode.Z) {
             animation.stop();
-        } else if(code == KeyCode.X) {
+        } else if (code == KeyCode.X) {
             animation.play();
-        } else if(code == KeyCode.A) {
+        } else if (code == KeyCode.A) {
             myPaddle.changeNormalBounce();
-        } else if(code == KeyCode.SPACE) {
+        } else if (code == KeyCode.SPACE) {
             shootBomb();
-        } else if(code == KeyCode.N && !balls.isEmpty()) {
+        } else if (code == KeyCode.N && !balls.isEmpty()) {
             generateBalls();
-        } else if(code == KeyCode.M) {
+        } else if (code == KeyCode.M) {
             myPaddle.changeMagnetic(true);
+        } else if (code == KeyCode.S) {
+            changeBallSpeed(true);
+        } else if(code == KeyCode.Q) {
+            changeBallSpeed(false);
+        } else if(code == KeyCode.I) {
+            moreItem = !moreItem;
+        } else if(code == KeyCode.F) {
+            myPaddle.increaseSpeed(true);
         }
     }
 
     private void keyReleased(KeyCode code) {
         if (code == KeyCode.RIGHT || code == KeyCode.LEFT) {
-            myPaddle.setSpeed(0);
+            myPaddle.stop();
         }
     }
 
@@ -209,6 +226,7 @@ public class BreakOutGame extends Application {
                 if (sprite instanceof Brick) {
                     Brick brick = (Brick) sprite;
                     removableBricks.remove(brick);
+                    score += 10;
                     if (!(brick.getBrickLife() == 0)) {
                         bricksToBeEdited.add(new Brick(brickImage(brick.getBrickLife(), brick.isMoving()),
                                 brick.isMoving(), brick.getBrickLife(), brick.getRow(), brick.getCol(), SECOND_DELAY));
@@ -420,7 +438,7 @@ public class BreakOutGame extends Application {
         labels.clear();
         HBox hbox = defaultHBox();
         labels.add(new Label("Life : 3"));
-        labels.add(new Label("Score : 0 "));
+        labels.add(new Label("Score : 0"));
         labels.add(new Label("Bombs : 0"));
         labels.add(new Label("Level : 1"));
 
@@ -441,6 +459,16 @@ public class BreakOutGame extends Application {
             labels.get(i).setPrefHeight(30);
             hbox.getChildren().add(labels.get(i));
         }
+        hbox.setTranslateY(ABILITY_Y_POS);
+        return hbox;
+    }
+
+    private HBox explanationLabelsInit() {
+        HBox hbox = defaultHBox();
+        Label label = new Label("S -> Sets the speed of the balls slower");
+        labels.add(label);
+        label.setPrefHeight(40);
+        hbox.getChildren().add(label);
         hbox.setTranslateY(MAX_Y_POS);
         return hbox;
     }
@@ -468,6 +496,8 @@ public class BreakOutGame extends Application {
 
         if(myPaddle.isMagnetic()) {labels.get(6).setText("Magnetic: on");}
         else {labels.get(6).setText("Magnetic: off");}
+
+        explanationUpdate();
     }
 
     private void generateItem() {
@@ -479,9 +509,12 @@ public class BreakOutGame extends Application {
 
     private void generateItem(Brick brick) {
         int ranNum = (int) (Math.random() * 100 + 1);
-        if(ranNum<=ITEM_POSSIBILITY_SMALL/6) {generateItem('L', brick);}
-        else if(ranNum<=ITEM_POSSIBILITY_SMALL /2) {generateItem('P', brick); }
-        else if(ranNum<=ITEM_POSSIBILITY_SMALL) {generateItem('B', brick);}
+        int itemPos = ITEM_POSSIBILITY_SMALL;
+        if(!moreItem) {itemPos = ITEM_POSSIBILITY_LARGE;}
+        if(ranNum<=itemPos/6) {generateItem('L', brick);}
+        else if(ranNum<=itemPos/3) {generateItem('P', brick); }
+        else if(ranNum<=itemPos * 2/3) {generateItem('B', brick);}
+        else if(ranNum<= itemPos) {generateItem('S', brick);}
     }
 
     private void generateItem(char type, Brick brick) {
@@ -496,14 +529,53 @@ public class BreakOutGame extends Application {
             case 'L' : return stringToImage(LIFE_POWER);
             case 'P' : return stringToImage(PADDLE_POWER);
             case 'B' : return stringToImage(BOMB_POWER);
+            case 'S' : return stringToImage(SLOW_POWER);
         }
-        return stringToImage(BOMB_POWER);
+        return stringToImage(SLOW_POWER);
     }
 
-    private void itemEffects(String type) {
+    private void itemEffects(ArrayList<Character> types) {
+        for(char type : types) {
+            if(type == 'P') {myPaddle.stretchPaddle(false);}
+            else if(type == 'L') {life++;}
+            else if(type == 'B') {bombNum += 3;}
+            else if(type == 'S') {changeBallSpeed(true);}
+        }
+    }
 
-        if(type!=null) {
-            String[] effects = type.split(" ");
+    private void changeBallSpeed(boolean slow) {
+        for(Ball ball : balls) {
+            if(slow) {ball.setSpeedSlower(level);}
+            else {ball.setSpeedFaster(level);}
+        }
+    }
+
+    private void callExplanations() {
+        try {
+            File file = new File(EXPLANATIONS);
+            Scanner sc = new Scanner(file);
+            while(sc.hasNextLine()) {
+                String line = sc.nextLine();
+                explanations.add(line);
+            }
+        } catch (IOException e) {
+            System.out.println(levelMap(level) + " cannot be found");
+        }
+    }
+
+    public void explanationUpdate() {
+        Label label = labels.get(7);
+        if(!allBallsMoving()) {
+            explanationClock = 120;
+            label.setText("Press Enter Key to move ball(s)");
+        }
+        else if(explanationClock < 240) {
+            explanationClock++;
+        } else {
+            label.setText(explanations.get(explanationIdx));
+            if(explanationIdx == explanations.size() - 1) {explanationIdx = 0;}
+            else {explanationIdx++;}
+            explanationClock = 0;
         }
     }
 

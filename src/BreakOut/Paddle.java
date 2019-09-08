@@ -3,6 +3,8 @@ package BreakOut;
 
 import javafx.scene.image.Image;
 
+import java.util.ArrayList;
+
 public class Paddle extends Sprite {
 
     private static final int PADDLE_NORMAL_LENGTH = 80;
@@ -10,6 +12,9 @@ public class Paddle extends Sprite {
     private static final int PADDLE_HEIGHT = 15;
     private static final double STRETCH_WIDTH = 1.5;
     private static final double CONTRACT_WIDTH = 2.25;
+    private static final int PADDLE_SPEED = 200;
+    private static final int PADDLE_FAST_SPEED = 275;
+    private static final int PADDLE_FASTER_SPEED = 350;
 
 
     private int speed;
@@ -19,7 +24,9 @@ public class Paddle extends Sprite {
     private boolean normalBounce = false;
     private boolean magnetic = false;
     private int stretched;
-    private String itemType = "";
+    private int directionX = 0;
+    private int speedUp = 0;
+    private ArrayList<Character> itemType = new ArrayList<>();
 
     public Paddle(Image image, int level, double elapsedTime) {
         super(image);
@@ -27,16 +34,16 @@ public class Paddle extends Sprite {
         setFitWidth(width);
         this.elapsedTime = elapsedTime;
         this.setFitHeight(PADDLE_HEIGHT);
-        speed = 0;
+        speed = PADDLE_SPEED;
     }
 
     @Override
-    public void move() { this.setX(this.getX() + speed * elapsedTime); }
+    public void move() { this.setX(this.getX() + speed * elapsedTime * directionX); }
 
     @Override
     public void collide(Sprite other) {
         if(other instanceof Item && other.intersects(getBoundsInLocal())) {
-            itemType += ((Item) other).getType() + " ";
+            itemType.add(((Item) other).getType());
         }
     }
 
@@ -69,22 +76,36 @@ public class Paddle extends Sprite {
     public boolean getWarp() {return warp;}
 
     public void stretchPaddle(boolean cheat) {
+        double centerX = getCenterX();
         if(stretched <= 1) {
             width *= STRETCH_WIDTH; stretched++;
         } else if(stretched == 2) {
             if(cheat) {contractPaddle();}
         }
         setFitWidth(width);
+        setX(centerX - width/2);
     }
 
     public void contractPaddle() {
+        double centerX = getCenterX();
         if(stretched == 1) { width /= STRETCH_WIDTH; }
         else if(stretched == 2) { width /= CONTRACT_WIDTH;}
         this.setFitWidth(width);
         stretched = 0;
+        setX(centerX - width/2);
     }
 
-    public void resetType() {itemType = "";}
+    public void increaseSpeed(boolean cheat) {
+        if(speedUp == 0) {
+            speedUp++; speed = PADDLE_FAST_SPEED;
+        } else if(speedUp == 1) {
+            speedUp++; speed = PADDLE_FASTER_SPEED;
+        } else {
+            if(cheat) {speed = PADDLE_SPEED; speedUp = 0;}
+        }
+    }
+
+    public void resetType() {itemType.clear();}
     public void changeNormalBounce() {normalBounce = !normalBounce;}
     public boolean getNormalBounce() {return normalBounce;}
     public boolean isMagnetic() {return magnetic;}
@@ -93,6 +114,11 @@ public class Paddle extends Sprite {
         else {magnetic = true;}
     }
 
-    public String getItemType() {return itemType;}
+    public void moveLeft() {directionX = -1;}
+    public void moveRight() {directionX = 1;}
+    public void stop() {directionX = 0;}
+
+
+    public ArrayList<Character> getItemType() {return itemType;}
     private double getScreenWidth() {return getParent().getScene().getWidth();}
 }
