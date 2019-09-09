@@ -42,7 +42,7 @@ public class BreakOutGame extends Application {
     private static final Paint HBOX_COLOR = Color.LIGHTBLUE;
     private static final double PADDLE_LOCATION_Y = 580;
     private static final double FIRST_QUADRANT = 90;
-    private static final int ITEM_POSSIBILITY_SMALL = 25;
+    private static final int ITEM_POSSIBILITY_SMALL = 20;
     private static final int ITEM_POSSIBILITY_LARGE = 35;
     public static final double MIN_Y_POS = 30;
     public static final double MAX_Y_POS = 620;
@@ -65,6 +65,7 @@ public class BreakOutGame extends Application {
     private static final String BOMB_POWER = "bombpower.gif";
     private static final String PADDLE_POWER = "paddlelength.gif";
     private static final String SLOW_POWER = "slowpower.gif";
+    private static final String NEW_BALL_POWER = "newball.png";
     private static final String LEVEL_ONE_MAP = "resources/lv1.txt";
     private static final String LEVEL_TWO_MAP = "resources/lv2.txt";
     private static final String LEVEL_THREE_MAP = "resources/lv3.txt";
@@ -150,25 +151,23 @@ public class BreakOutGame extends Application {
     }
 
     private void handleKeyInput(KeyCode code) {
-        if (code == KeyCode.RIGHT) { myPaddle.moveRight(); }
-        else if (code == KeyCode.LEFT) { myPaddle.moveLeft(); }
-        else if (code == KeyCode.DIGIT1) { generateLevel(1); }
-        else if (code == KeyCode.DIGIT2) { generateLevel(2); }
-        else if (code == KeyCode.DIGIT3) { generateLevel(3); }
-        else if (code == KeyCode.DIGIT4) { generateLevel(4); }
-        else if (code == KeyCode.DIGIT5) { generateLevel(5); }
-        else if (code == KeyCode.P) { myPaddle.stretchPaddle(true); }
-        else if (code == KeyCode.W) { myPaddle.changeWarp(); }
-        else if (code == KeyCode.L) { life++; }
-        else if (code == KeyCode.B) { bombNum += 3; }
-        else if (code == KeyCode.R) { resetPositions(); }
-        else if (code == KeyCode.ENTER) { moveBalls(); }
-        else if (code == KeyCode.Z) { animation.stop(); }
-        else if (code == KeyCode.X) { animation.play(); }
-        else if (code == KeyCode.A) { myPaddle.changeNormalBounce(); }
-        else if (code == KeyCode.SPACE) { shootBomb(); }
-        else if (code == KeyCode.N && !balls.isEmpty()) { generateBalls(); }
-        else if (code == KeyCode.M) { myPaddle.changeMagnetic(true); }
+        if (code == KeyCode.RIGHT) { myPaddle.moveRight();}
+        else if (code == KeyCode.LEFT) { myPaddle.moveLeft();}
+        else if (code == KeyCode.DIGIT1) { generateLevel(1);}
+        else if (code == KeyCode.DIGIT2) { generateLevel(2);}
+        else if (code == KeyCode.DIGIT3) { generateLevel(3);}
+        else if (code == KeyCode.DIGIT4) { generateLevel(4);}
+        else if (code == KeyCode.DIGIT5) { generateLevel(5);}
+        else if (code == KeyCode.P) { myPaddle.stretchPaddle(true);}
+        else if (code == KeyCode.W) { myPaddle.changeWarp();}
+        else if (code == KeyCode.L) { life++;}
+        else if (code == KeyCode.B) { bombNum += 3;}
+        else if (code == KeyCode.R) { resetPositions();}
+        else if (code == KeyCode.ENTER) { moveBalls();}
+        else if (code == KeyCode.A) { myPaddle.changeNormalBounce();}
+        else if (code == KeyCode.SPACE) { shootBomb();}
+        else if (code == KeyCode.N && !balls.isEmpty()) { generateBalls();}
+        else if (code == KeyCode.M) { myPaddle.changeMagnetic(true);}
         else if (code == KeyCode.S) { changeBallSpeed(true); }
         else if(code == KeyCode.Q) { changeBallSpeed(false); }
         else if(code == KeyCode.I) { moreItem = !moreItem; }
@@ -195,18 +194,14 @@ public class BreakOutGame extends Application {
     private void updateSprites() {
         generateItem();
         if(!bricksToBeEdited.isEmpty()) { editBricks(); }
-
         if(removableBricks.size() == 0) { generateLevel(level+1); }
-
         if(balls.isEmpty()) {
             generateBall(myPaddle.getCenterX(), myPaddle.getY(), FIRST_QUADRANT/2,
                     FIRST_QUADRANT + FIRST_QUADRANT/2);
             life--;
         }
         if(life==0) {gameEnd(false, SCREEN_WIDTH, SCREEN_HEIGHT, BACKGROUND);}
-
         for (Sprite sprite : sprites) { sprite.update(); }
-
         itemEffects(myPaddle.getItemType());
         moveBallAlongPaddle();
         myPaddle.resetType();
@@ -495,9 +490,10 @@ public class BreakOutGame extends Application {
         int ranNum = (int) (Math.random() * 100 + 1);
         int itemPos = ITEM_POSSIBILITY_SMALL;
         if(!moreItem) {itemPos = ITEM_POSSIBILITY_LARGE;}
-        if(ranNum<=itemPos/6) {generateItem('L', brick);}
-        else if(ranNum<=itemPos/3) {generateItem('P', brick); }
-        else if(ranNum<=itemPos * 2/3) {generateItem('B', brick);}
+        if(ranNum<=itemPos/7) {generateItem('L', brick);}
+        else if(ranNum<=itemPos*2/7) {generateItem('P', brick); }
+        else if(ranNum<=itemPos * 4/7) {generateItem('B', brick);}
+        else if(ranNum<=itemPos * 6/7) {generateItem('N', brick);}
         else if(ranNum<= itemPos) {generateItem('S', brick);}
     }
 
@@ -513,6 +509,7 @@ public class BreakOutGame extends Application {
             case 'L' : return stringToImage(LIFE_POWER);
             case 'P' : return stringToImage(PADDLE_POWER);
             case 'B' : return stringToImage(BOMB_POWER);
+            case 'N' : return stringToImage(NEW_BALL_POWER);
             case 'S' : return stringToImage(SLOW_POWER);
         }
         return stringToImage(SLOW_POWER);
@@ -523,6 +520,7 @@ public class BreakOutGame extends Application {
             if(type == 'P') {myPaddle.stretchPaddle(false);}
             else if(type == 'L') {life++;}
             else if(type == 'B') {bombNum += 3;}
+            else if(type == 'N') {generateBalls();}
             else if(type == 'S') {changeBallSpeed(true);}
         }
     }
