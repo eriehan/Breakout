@@ -10,4 +10,3 @@ S -> Make my ball slower!
 Q -> Make my ball faster!
 I -> Gimme items more/less often!
 F -> Make my paddle faster...or maybe slower!
-

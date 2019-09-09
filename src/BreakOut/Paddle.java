@@ -16,7 +16,6 @@ public class Paddle extends Sprite {
     private static final int PADDLE_FAST_SPEED = 275;
     private static final int PADDLE_FASTER_SPEED = 350;
 
-
     private int speed;
     private double elapsedTime;
     private double width;
@@ -117,7 +116,6 @@ public class Paddle extends Sprite {
     public void moveLeft() {directionX = -1;}
     public void moveRight() {directionX = 1;}
     public void stop() {directionX = 0;}
-
 
     public ArrayList<Character> getItemType() {return itemType;}
     private double getScreenWidth() {return getParent().getScene().getWidth();}

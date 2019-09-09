@@ -9,6 +9,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -16,9 +17,9 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,6 +28,11 @@ import java.util.Scanner;
 public class BreakOutGame extends Application {
 
     private static final String TITLE = "BRICKGAME BY ERIC";
+    private static final double STARTING_SCENE_WIDTH = 720;
+    private static final double STARING_SCENE_HEIGHT = 720;
+    private static final double STARTING_SCENE_IMAGE_WIDTH = 480;
+    private static final Paint STARTING_BACKGROUND = Color.WHITE;
+    private static final Paint STARTING_SCENE_TEXT_COLOR = Color.CRIMSON;
     private static final double SCREEN_WIDTH = 480;
     private static final double SCREEN_HEIGHT = 690;
     private static final int FRAMES_PER_SECOND = 60;
@@ -38,6 +44,12 @@ public class BreakOutGame extends Application {
     private static final double FIRST_QUADRANT = 90;
     private static final int ITEM_POSSIBILITY_SMALL = 25;
     private static final int ITEM_POSSIBILITY_LARGE = 35;
+    public static final double MIN_Y_POS = 30;
+    public static final double MAX_Y_POS = 620;
+    public static final double ABILITY_Y_POS = 660;
+
+    //resource file names
+    private static final String BREAKOUT_IMAGE = "breakout.png";
     private static final String PADDLE_IMAGE = "paddle.gif";
     private static final String BALL_IMAGE = "ball.gif";
     private static final String BRICK_IMAGE_1 = "brick1.gif";
@@ -59,11 +71,10 @@ public class BreakOutGame extends Application {
     private static final String LEVEL_FOUR_MAP = "resources/lv4.txt";
     private static final String LEVEL_FIVE_MAP = "resources/lv5.txt";
     private static final String EXPLANATIONS = "resources/explanations.txt";
-    public static final double MIN_Y_POS = 30;
-    public static final double MAX_Y_POS = 620;
-    public static final double ABILITY_Y_POS = 660;
+    private static final String START_SCREEN_TEXTS = "resources/initialSceneTexts.txt";
 
-    private Scene myScene;
+
+    private Stage myStage;
     private Group myRoot = new Group();
     private Paddle myPaddle;
     private ArrayList<Sprite> sprites = new ArrayList<>();
@@ -81,42 +92,54 @@ public class BreakOutGame extends Application {
     private int score;
     private int level = 1;
     private int bombNum;
-    private KeyFrame frame;
     private Timeline animation;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        myScene = setupGame(SCREEN_WIDTH, SCREEN_HEIGHT, BACKGROUND);
-        HBox hbox = statsInit();
-        HBox hbox2 = abilityLabelsInit();
-        HBox hbox3 = explanationLabelsInit();
-        myRoot.getChildren().add(hbox);
-        myRoot.getChildren().add(hbox2);
-        myRoot.getChildren().add(hbox3);
-
-        primaryStage.setScene(myScene);
-        primaryStage.setTitle(TITLE);
-        primaryStage.show();
-
-        frame = new KeyFrame(Duration.millis(MILLISECOND_DELAY), e -> step());
-        animation = new Timeline();
-        animation.setCycleCount(Timeline.INDEFINITE);
-        animation.getKeyFrames().add(frame);
-        animation.play();
+        myStage = primaryStage;
+        makeInitialScene(STARTING_SCENE_WIDTH, STARING_SCENE_HEIGHT, STARTING_BACKGROUND);
+        myStage.setTitle(TITLE);
+        myStage.show();
     }
 
-    private Scene setupGame(double width, double height, Paint background) {
-        Scene scene = new Scene(myRoot, width, height, background);
-        callExplanations();
+    private void makeInitialScene(double width, double height, Paint background) {
+        Group root = new Group();
+        Scene initialScene = new Scene(root, width, height, background);
+        addLinesToInitialScreen(root, width, height);
+        ImageView breakOutImage = new ImageView(stringToImage(BREAKOUT_IMAGE));
+        breakOutImage.setFitWidth(STARTING_SCENE_IMAGE_WIDTH);
+        breakOutImage.setX(width/2 - STARTING_SCENE_IMAGE_WIDTH/2);
+        breakOutImage.setY(100);
+        root.getChildren().add(breakOutImage);
+        initialScene.setOnKeyPressed(keyEvent -> {
+            setUpGame(SCREEN_WIDTH, SCREEN_HEIGHT, BACKGROUND);
+            KeyFrame frame = new KeyFrame(Duration.millis(MILLISECOND_DELAY), e -> step());
+            animation = new Timeline();
+            animation.setCycleCount(Timeline.INDEFINITE);
+            animation.getKeyFrames().add(frame);
+            animation.play();
+        });
+        myStage.setScene(initialScene);
+    }
+
+    private void setUpGame(double width, double height, Paint background) {
+        Scene gameScene = new Scene(myRoot, width, height, background);
+        while(!myRoot.getChildren().isEmpty()) {
+            myRoot.getChildren().remove(myRoot.getChildren().get(0));
+        }
+        myRoot.getChildren().removeAll();
+        explanations = readFromFile(EXPLANATIONS);
+
+        myRoot.getChildren().addAll(statsInit(), abilityLabelsInit(), explanationLabelsInit());
 
         myPaddle = new Paddle(stringToImage(PADDLE_IMAGE), level, SECOND_DELAY);
         addSprite(myPaddle);
         generateLevel(1);
         life = 3;
 
-        scene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
-        scene.setOnKeyReleased(e -> keyReleased(e.getCode()));
-        return scene;
+        gameScene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
+        gameScene.setOnKeyReleased(e -> keyReleased(e.getCode()));
+        myStage.setScene(gameScene);
     }
 
     private void step() {
@@ -127,59 +150,33 @@ public class BreakOutGame extends Application {
     }
 
     private void handleKeyInput(KeyCode code) {
-        if (code == KeyCode.RIGHT) {
-            myPaddle.moveRight();
-        } else if (code == KeyCode.LEFT) {
-            myPaddle.moveLeft();
-        } else if (code == KeyCode.DIGIT1) {
-            generateLevel(1);
-        } else if (code == KeyCode.DIGIT2) {
-            generateLevel(2);
-        } else if (code == KeyCode.DIGIT3) {
-            generateLevel(3);
-        } else if (code == KeyCode.DIGIT4) {
-            generateLevel(4);
-        } else if (code == KeyCode.DIGIT5) {
-            generateLevel(5);
-        } else if (code == KeyCode.P) {
-            myPaddle.stretchPaddle(true);
-        } else if (code == KeyCode.W) {
-            myPaddle.changeWarp();
-        } else if (code == KeyCode.L) {
-            life++;
-        } else if (code == KeyCode.B) {
-            bombNum += 3;
-        } else if (code == KeyCode.R) {
-            resetPositions();
-        } else if (code == KeyCode.ENTER) {
-            moveBalls();
-        } else if (code == KeyCode.Z) {
-            animation.stop();
-        } else if (code == KeyCode.X) {
-            animation.play();
-        } else if (code == KeyCode.A) {
-            myPaddle.changeNormalBounce();
-        } else if (code == KeyCode.SPACE) {
-            shootBomb();
-        } else if (code == KeyCode.N && !balls.isEmpty()) {
-            generateBalls();
-        } else if (code == KeyCode.M) {
-            myPaddle.changeMagnetic(true);
-        } else if (code == KeyCode.S) {
-            changeBallSpeed(true);
-        } else if(code == KeyCode.Q) {
-            changeBallSpeed(false);
-        } else if(code == KeyCode.I) {
-            moreItem = !moreItem;
-        } else if(code == KeyCode.F) {
-            myPaddle.increaseSpeed(true);
-        }
+        if (code == KeyCode.RIGHT) { myPaddle.moveRight(); }
+        else if (code == KeyCode.LEFT) { myPaddle.moveLeft(); }
+        else if (code == KeyCode.DIGIT1) { generateLevel(1); }
+        else if (code == KeyCode.DIGIT2) { generateLevel(2); }
+        else if (code == KeyCode.DIGIT3) { generateLevel(3); }
+        else if (code == KeyCode.DIGIT4) { generateLevel(4); }
+        else if (code == KeyCode.DIGIT5) { generateLevel(5); }
+        else if (code == KeyCode.P) { myPaddle.stretchPaddle(true); }
+        else if (code == KeyCode.W) { myPaddle.changeWarp(); }
+        else if (code == KeyCode.L) { life++; }
+        else if (code == KeyCode.B) { bombNum += 3; }
+        else if (code == KeyCode.R) { resetPositions(); }
+        else if (code == KeyCode.ENTER) { moveBalls(); }
+        else if (code == KeyCode.Z) { animation.stop(); }
+        else if (code == KeyCode.X) { animation.play(); }
+        else if (code == KeyCode.A) { myPaddle.changeNormalBounce(); }
+        else if (code == KeyCode.SPACE) { shootBomb(); }
+        else if (code == KeyCode.N && !balls.isEmpty()) { generateBalls(); }
+        else if (code == KeyCode.M) { myPaddle.changeMagnetic(true); }
+        else if (code == KeyCode.S) { changeBallSpeed(true); }
+        else if(code == KeyCode.Q) { changeBallSpeed(false); }
+        else if(code == KeyCode.I) { moreItem = !moreItem; }
+        else if(code == KeyCode.F) { myPaddle.increaseSpeed(true); }
     }
 
     private void keyReleased(KeyCode code) {
-        if (code == KeyCode.RIGHT || code == KeyCode.LEFT) {
-            myPaddle.stop();
-        }
+        if (code == KeyCode.RIGHT || code == KeyCode.LEFT) { myPaddle.stop(); }
     }
 
     private void handleCollisions() {
@@ -197,20 +194,19 @@ public class BreakOutGame extends Application {
 
     private void updateSprites() {
         generateItem();
-        if(!bricksToBeEdited.isEmpty()) {
-            editBricks();
-        }
-        if(removableBricks.size() == 0) {
-            generateLevel(level+1);
-        }
+        if(!bricksToBeEdited.isEmpty()) { editBricks(); }
+
+        if(removableBricks.size() == 0) { generateLevel(level+1); }
+
         if(balls.isEmpty()) {
             generateBall(myPaddle.getCenterX(), myPaddle.getY(), FIRST_QUADRANT/2,
                     FIRST_QUADRANT + FIRST_QUADRANT/2);
             life--;
         }
-        for (Sprite sprite : sprites) {
-            sprite.update();
-        }
+        if(life==0) {gameEnd(false, SCREEN_WIDTH, SCREEN_HEIGHT, BACKGROUND);}
+
+        for (Sprite sprite : sprites) { sprite.update(); }
+
         itemEffects(myPaddle.getItemType());
         moveBallAlongPaddle();
         myPaddle.resetType();
@@ -244,31 +240,27 @@ public class BreakOutGame extends Application {
     }
 
     private void generateLevel(int level) {
-        this.level = level;
-        clearMap();
-        myPaddle.setWidthByLevel(level);
-        paddleInit();
-        generateBall(myPaddle.getX() + myPaddle.getWidth() / 2, myPaddle.getY(), FIRST_QUADRANT/2,
-                FIRST_QUADRANT + FIRST_QUADRANT/2);
-        drawMap(level);
+        if(level==6) {gameEnd(true, SCREEN_WIDTH, SCREEN_HEIGHT, BACKGROUND);}
+        else {
+            this.level = level;
+            clearMap();
+            myPaddle.setWidthByLevel(level);
+            paddleInit();
+            generateBall(myPaddle.getX() + myPaddle.getWidth() / 2, myPaddle.getY(), FIRST_QUADRANT / 2,
+                    FIRST_QUADRANT + FIRST_QUADRANT / 2);
+            drawMap(level);
+        }
     }
 
     private void drawMap(int level) {
-        ArrayList<String[]> lines = new ArrayList<>();
-        try {
-            File file = new File(levelMap(level));
-            Scanner sc = new Scanner(file);
-            while(sc.hasNextLine()) {
-                String line = sc.nextLine();
-                String[] strings = line.split(" ");
-                lines.add(strings);
-            }
-        } catch (IOException e) {
-            System.out.println(levelMap(level) + " cannot be found");
-        }
+        ArrayList<String> lines = readFromFile(levelMap(level));
+        ArrayList<String[]> mapLines = new ArrayList<>();
 
-        if(!lines.isEmpty()) {
-            drawMap(lines);
+        for(String line : lines) {
+            mapLines.add(line.split(" "));
+        }
+        if(!mapLines.isEmpty()) {
+            drawMap(mapLines);
         }
     }
 
@@ -318,10 +310,10 @@ public class BreakOutGame extends Application {
         for (Sprite sprite : sprites) {
             if (!(sprite instanceof Paddle)) {
                 spritesToBeRemoved.add(sprite);
-            }
-            if(sprite instanceof Ball) {
-                Ball ball = (Ball) sprite;
-                balls.remove(ball);
+                if (sprite instanceof Ball) {
+                    Ball ball = (Ball) sprite;
+                    balls.remove(ball);
+                }
             }
         }
         removableBricks.clear();
@@ -363,9 +355,7 @@ public class BreakOutGame extends Application {
     //LEFT or RIGHT key is pressed.
     private void moveBallAlongPaddle() {
         for(Ball ball : balls) {
-            if(!ball.isMoving()) {
-                ball.setX(myPaddle.getCenterX() - ball.getWidth() / 2);
-            }
+            if(!ball.isMoving()) { ball.setX(myPaddle.getCenterX() - ball.getWidth() / 2); }
         }
     }
 
@@ -384,17 +374,13 @@ public class BreakOutGame extends Application {
 
     private void moveBalls() {
         for(Ball ball : balls) {
-            if(!(ball.isMoving())) {
-                ball.startMoving(level);
-            }
+            if(!(ball.isMoving())) { ball.startMoving(level); }
         }
     }
 
     private boolean allBallsMoving() {
         for(Ball ball : balls) {
-            if(!(ball.isMoving())) {
-                return false;
-            }
+            if(!(ball.isMoving())) { return false; }
         }
         return true;
     }
@@ -454,7 +440,6 @@ public class BreakOutGame extends Application {
         labels.add(new Label("Warp: off"));
         labels.add(new Label("Bounce differently: on"));
         labels.add(new Label("Magnetic: off"));
-
         for(int i=4; i<labels.size(); i++) {
             labels.get(i).setPrefHeight(30);
             hbox.getChildren().add(labels.get(i));
@@ -496,7 +481,6 @@ public class BreakOutGame extends Application {
 
         if(myPaddle.isMagnetic()) {labels.get(6).setText("Magnetic: on");}
         else {labels.get(6).setText("Magnetic: off");}
-
         explanationUpdate();
     }
 
@@ -550,33 +534,76 @@ public class BreakOutGame extends Application {
         }
     }
 
-    private void callExplanations() {
-        try {
-            File file = new File(EXPLANATIONS);
-            Scanner sc = new Scanner(file);
-            while(sc.hasNextLine()) {
-                String line = sc.nextLine();
-                explanations.add(line);
-            }
-        } catch (IOException e) {
-            System.out.println(levelMap(level) + " cannot be found");
-        }
-    }
-
     public void explanationUpdate() {
         Label label = labels.get(7);
         if(!allBallsMoving()) {
-            explanationClock = 120;
+            explanationClock = 240;
             label.setText("Press Enter Key to move ball(s)");
         }
-        else if(explanationClock < 240) {
-            explanationClock++;
-        } else {
+        else if(explanationClock < 240) { explanationClock++; }
+        else {
             label.setText(explanations.get(explanationIdx));
             if(explanationIdx == explanations.size() - 1) {explanationIdx = 0;}
             else {explanationIdx++;}
             explanationClock = 0;
         }
+    }
+
+    private ArrayList<String> readFromFile(String fileName) {
+        ArrayList<String> lines = new ArrayList<>();
+        try {
+            File file = new File(fileName);
+            Scanner sc = new Scanner(file);
+            while(sc.hasNextLine()) {
+                String line = sc.nextLine();
+                lines.add(line);
+            }
+        } catch (IOException e) {
+            System.out.println(fileName + " cannot be found");
+        }
+        return lines;
+    }
+
+    private Group addLabelToGroup(Group root, String str, Paint background, double width, double yPos, int textSize) {
+        root.getChildren().add(makeLabelOnCenter(str, background, width, width*2/3, yPos, textSize));
+        return root;
+    }
+
+    private Label makeLabelOnCenter(String text, Paint background, double screenWidth, double labelWidth, double yPos, int textSize) {
+        Label label = new Label(text);
+        label.setTextFill(background);
+        label.setAlignment(Pos.CENTER);
+        label.setTranslateY(yPos);
+        label.setTranslateX(screenWidth/2 - labelWidth/2);
+        label.setPrefWidth(labelWidth);
+        label.setFont(new Font(textSize));
+        return label;
+    }
+
+    private void gameEnd(boolean success, double width, double height, Paint background) {
+        Group gameEndRoot = new Group();
+        Scene gameEndScene = new Scene(gameEndRoot, width, height, background);
+        if(!success) {addLabelToGroup(gameEndRoot, "WASTED", STARTING_SCENE_TEXT_COLOR, width, height * 0.4, 40);}
+        else {addLabelToGroup(gameEndRoot, "YOU WIN!", STARTING_SCENE_TEXT_COLOR, width, height * 0.4, 40);}
+        myStage.setScene(gameEndScene);
+        animation.stop();
+    }
+
+    private Group addLinesToInitialScreen(Group root, double width, double height) {
+        ArrayList<String> initialTexts = readFromFile(START_SCREEN_TEXTS);
+        double yPos; int textSize = 11;
+        for(int i=0; i<initialTexts.size(); i++) {
+            if(i==0) {yPos = 0.6 * height; textSize = 20;}
+            else if(i==1) {yPos = 0.65 * height; textSize = 12;}
+            else if(i==2) {yPos = 0.68 * height;}
+            else if(i==3) {yPos = 0.71 * height;}
+            else if(i==4) {yPos = 0.73 * height;}
+            else if(i==5) {yPos = 0.76 * height;}
+            else if(i==6) {yPos = 0.78 * height;}
+            else  {yPos = 0.81 * height;}
+            root = addLabelToGroup(root, initialTexts.get(i), STARTING_SCENE_TEXT_COLOR, width, yPos, textSize);
+        }
+        return root;
     }
 
     public static void main(String[] args) {

@@ -25,21 +25,16 @@ public class Item extends Sprite {
         this.setY(this.getY() + ITEM_SPEED * elapsedTime);
     }
 
+    //Cannot do alive = !(other instanceof Paddle && other.intersects(getBoundsInLocal))
+    //as the item can sometimes disappear when it is not in contact with other sprites (when the item is off the boundary of the screen)
     @Override
     public void collide(Sprite other) {
-        if(other instanceof Paddle && other.intersects(getBoundsInLocal())) {
-            alive = false;
-        }
+        if(other instanceof Paddle && other.intersects(getBoundsInLocal())) { alive = false; }
     }
 
     @Override
-    public void offBoundary() {
-        if(this.getCenterY() > BreakOutGame.MAX_Y_POS) {
-            alive = false;
-        }
-    }
+    public void offBoundary() { alive = this.getCenterY() <= BreakOutGame.MAX_Y_POS; }
 
     public boolean isAlive() { return alive; }
-
     public char getType() {return type;}
 }

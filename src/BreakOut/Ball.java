@@ -20,7 +20,7 @@ public class Ball extends Sprite {
     private static final double SECOND_RATIO = 0.4;
     private static final double THIRD_RATIO = 0.6;
     private static final double FOURTH_RATIO = 0.8;
-    private static final double BOUNCING_ANGLE_ADDITION = 10.0;
+    private static final double BOUNCING_ANGLE_ADDITION = 7.5;
     private static final double SPEED_CHANGE_RATIO = 1.3;
     private static final double SPEED_MAX_CHANGE_RATIO = 1.5;
 
@@ -54,21 +54,15 @@ public class Ball extends Sprite {
 
     @Override
     public void collide(Sprite other) {
-        if(other instanceof Paddle) {
-            collide((Paddle) other);
-        }
-        else if(other instanceof Brick) {
-            collide((Brick) other);
-        }
+        if(other instanceof Paddle) { collide((Paddle) other); }
+        else if(other instanceof Brick) { collide((Brick) other); }
     }
 
     @Override
     public void offBoundary() {
-        if(this.getX() < 0 || getX() > getScreenWidth() - getWidth()) {
-            reverseX();
-        } else if(this.getY() < BreakOutGame.MIN_Y_POS) {
-            reverseY();
-        } else  { alive = this.getY() < BreakOutGame.MAX_Y_POS; }
+        if(this.getX() < 0 || getX() > getScreenWidth() - getWidth()) { reverseX(); }
+        else if(this.getY() < BreakOutGame.MIN_Y_POS) { reverseY(); }
+        else  { alive = this.getY() < BreakOutGame.MAX_Y_POS; }
         hitBrickInit();
     }
 
@@ -76,9 +70,7 @@ public class Ball extends Sprite {
         if(Math.abs(getCenterY() - (other.getY()-getRadius()/2)) <= vY * elapsedTime / 2) {
             if (Math.abs(getCenterX() - other.getCenterX()) <= getRadius() + other.getWidth()/2) {
                 reverseY();
-                if(!other.getNormalBounce()) {
-                    changeAngle(other);
-                }
+                if(!other.getNormalBounce()) { changeAngle(other); }
                 if(other.isMagnetic()) {
                     speed = 0;
                     vX = 0; vY = 0;
@@ -231,6 +223,5 @@ public class Ball extends Sprite {
             speedsFromAngle(angle);
         }
     }
-
     private double getScreenWidth() { return getParent().getScene().getWidth();}
 }

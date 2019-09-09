@@ -31,24 +31,33 @@ the top of the paddle. Pressing the enter key will make the paddle 'shoot' the b
 direction.
 
 Cheat keys:
-1, 2, 3, 4, 5 -> move to that level. Once this key is pressed, everything on the screen
-except the paddle will disappear, and a new level map will be created. The paddle will
-be in the starting position. A new ball will appear on the middle of the paddle.
-
-P -> Paddle gets wider. Press P again and it reach the maximum width at that level. 
-Pressing P when the paddle's width is the maximum width will force the paddle to come back
-to its original length.
-
-R -> Resets that paddle and the ball to its original position.
-
-W -> The paddle can warp through one side of the screen to the other side of the screen. 
+1, 2, 3, 4, 5 -> Let me go to that level
+P -> Make my paddle longer...or maybe shorter!
+W -> Turn my paddle's warp power on/off!
+L -> (Cheat) Gimme more life!
+B -> (Cheat) Gimme more bombs!
+R -> (Cheat) Let me reset my position!
+N -> (Cheat) Gimme more balls!
+M -> Turn my paddle's magnetic power on/off!
+S -> Make my ball slower! (min speed = pressing S two times)
+Q -> Make my ball faster! (max speed = pressing Q two times)
+I -> Gimme items more/less often!
+F -> Make my paddle faster...or maybe slower! (max speed = pressing F two times, and the 
+paddle gets to minimum speed when you press F again at that state.)
 
 Known Bugs:
+When the speed of the ball gets very high at level 5 (after pressing Q two times and reaching the highest 
+possible ball speed in the game), I have found that the ball can be locked at the top of the screen
+for a few seconds. 
 
 Extra credit:
 
 
 ### Notes
+In PLAN.txt, I have written that there will be an item that gives the paddle a magnetic power.
+I decided not to implement that in my code as I realized that the magnetic power was a power so strong
+that it could ruin the fun of the game, especially because of the 
+Thus, I decided that 
 
 
 ### Impressions

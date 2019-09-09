@@ -36,9 +36,7 @@ public class Bomb extends Sprite {
     }
 
     @Override
-    public void offBoundary() {
-        alive = this.getY() > BreakOutGame.MIN_Y_POS;
-    }
+    public void offBoundary() { alive = this.getY() > BreakOutGame.MIN_Y_POS; }
 
     @Override
     public boolean isAlive() { return alive; }

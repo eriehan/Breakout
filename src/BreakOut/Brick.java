@@ -24,7 +24,6 @@ public class Brick extends Sprite {
 
         if(isMoving) {speed = BRICK_SPEED;}
         else {speed = 0.0;}
-
         directionX = 1;
         this.setFitWidth(BRICK_WIDTH);
         this.setFitHeight(BRICK_HEIGHT);
@@ -44,9 +43,7 @@ public class Brick extends Sprite {
 
     @Override
     public void offBoundary() {
-        if(this.getX() < 0 || this.getX() > getScreenWidth() - BRICK_WIDTH) {
-            directionX *= -1;
-        }
+        if(this.getX() < 0 || this.getX() > getScreenWidth() - BRICK_WIDTH) { directionX *= -1; }
     }
 
     @Override
@@ -58,11 +55,9 @@ public class Brick extends Sprite {
             brickLife--;
         }
     }
-
     public int getBrickLife() {return brickLife;}
     public int getRow() {return row;}
     public int getCol() {return col;}
     public boolean isMoving() {return !(speed==0);}
-
     private double getScreenWidth() {return getParent().getScene().getWidth();}
 }
