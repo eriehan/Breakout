@@ -15,7 +15,8 @@ Hours Spent: 40
 
 ### Resources Used
 ball.gif, brick1.git, brick2.gif, brick3.gif, brick4.gif, brick5.gif, brick6.gif, brick8.gif, brick10.gif,
-paddle.gif, ball.gif, bombpower.gif, bomb.png, breakout.png, lifepower.gif, paddlelength.gif, slowpower.gif
+paddle.gif, ball.gif, bombpower.gif, bomb.png, breakout.png, lifepower.gif, paddlelength.gif, slowpower.gif,
+newball.png
 
 ### Running the Program
 
@@ -60,7 +61,7 @@ At the last level, there are bricks that move horizontally.
 In PLAN.txt, I have written that there will be an item that gives the paddle a magnetic power.
 I decided not to implement that in my code as I realized that the magnetic power was a power so strong
 that it could ruin the fun of the game, especially when there are several balls on the screen. 
-Thus, I decided that 
+Thus, I decided to add different power ups instead.
 
 
 ### Impressions

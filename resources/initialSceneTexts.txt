@@ -2,7 +2,7 @@ Press Any Key To Start
 BreakOut Game Made By Erie Seong Ho Han
 Use the left and right Key on your keyboard to move your paddle!
 Power ups will give you another life, make your paddle longer,
-make your balls slower, or give you bombs
+make your balls slower, give you bombs, or create more balls
 Press space bar to shoot a bomb and destroy a brick
 (...or hit the ball and lose one life!)
 Information about cheat keys will be shown in the game screen.
