@@ -69,8 +69,6 @@ public class Paddle extends Sprite {
         setFitWidth(width);
     }
 
-    public void setSpeed(int speed) { this.speed = speed; }
-
     public void changeWarp() { this.warp = !warp; }
     public boolean getWarp() {return warp;}
 

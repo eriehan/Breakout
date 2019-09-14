@@ -78,12 +78,7 @@ public class BreakOutGame extends Application {
     private Stage myStage;
     private Group myRoot = new Group();
     private Paddle myPaddle;
-    private ArrayList<Sprite> sprites = new ArrayList<>();
-    private ArrayList<Sprite> spritesToBeRemoved = new ArrayList<>();
-    private ArrayList<Brick> bricksToBeEdited = new ArrayList<>();
-    private ArrayList<Brick> removableBricks = new ArrayList<>();
-    private ArrayList<Brick> removedBricks = new ArrayList<>();
-    private ArrayList<Ball> balls = new ArrayList<>();
+    private SpriteHolder spriteHolder = new SpriteHolder();
     private ArrayList<Label> labels = new ArrayList<>();
     private ArrayList<String> explanations = new ArrayList<>();
     private int explanationIdx = 0;
@@ -166,10 +161,10 @@ public class BreakOutGame extends Application {
         else if (code == KeyCode.ENTER) { moveBalls();}
         else if (code == KeyCode.A) { myPaddle.changeNormalBounce();}
         else if (code == KeyCode.SPACE) { shootBomb();}
-        else if (code == KeyCode.N && !balls.isEmpty()) { generateBalls();}
+        else if (code == KeyCode.N && spriteHolder.isThereBall()) { generateBalls();}
         else if (code == KeyCode.M) { myPaddle.changeMagnetic(true);}
-        else if (code == KeyCode.S) { changeBallSpeed(true); }
-        else if(code == KeyCode.Q) { changeBallSpeed(false); }
+        else if (code == KeyCode.S) { spriteHolder.changeBallSpeed(true, level); }
+        else if(code == KeyCode.Q) { spriteHolder.changeBallSpeed(false, level); }
         else if(code == KeyCode.I) { moreItem = !moreItem; }
         else if(code == KeyCode.F) { myPaddle.increaseSpeed(true); }
     }
@@ -179,66 +174,56 @@ public class BreakOutGame extends Application {
     }
 
     private void handleCollisions() {
-        for (Sprite spriteA : sprites) {
-            for (Sprite spriteB : sprites) {
-                spriteA.collide(spriteB);
-            }
-        }
+        spriteHolder.handleCollisions();
     }
 
     private void addSprite(Sprite sprite) {
-        sprites.add(sprite);
+        spriteHolder.addSprite(sprite);
         myRoot.getChildren().add(sprite);
     }
 
     private void updateSprites() {
         generateItem();
-        if(!bricksToBeEdited.isEmpty()) { editBricks(); }
-        if(removableBricks.size() == 0) { generateLevel(level+1); }
-        if(balls.isEmpty()) {
+        if(spriteHolder.isThereBrickToEdit()) { editBricks(); }
+        if(spriteHolder.allBricksRemoved()) { generateLevel(level+1); }
+        if(!spriteHolder.isThereBall()) {
             generateBall(myPaddle.getCenterX(), myPaddle.getY(), FIRST_QUADRANT/2,
                     FIRST_QUADRANT + FIRST_QUADRANT/2);
             life--;
         }
         if(life==0) {gameEnd(false, SCREEN_WIDTH, SCREEN_HEIGHT, BACKGROUND);}
-        for (Sprite sprite : sprites) { sprite.update(); }
+        spriteHolder.updateSprites();
         itemEffects(myPaddle.getItemType());
         moveBallAlongPaddle();
         myPaddle.resetType();
     }
 
     private void removeSprites() {
-        for (Sprite sprite : sprites) {
+        for (Sprite sprite : spriteHolder.getAllSprites()) {
             if (!sprite.isAlive()) {
-                if (sprite instanceof Ball) {
-                    Ball ball = (Ball) sprite;
-                    balls.remove(ball);
-                }
+                spriteHolder.addSpriteToBeRemoved(sprite);
+
                 if (sprite instanceof Brick) {
                     Brick brick = (Brick) sprite;
-                    removableBricks.remove(brick);
                     score += 10;
                     if (!(brick.getBrickLife() == 0)) {
-                        bricksToBeEdited.add(new Brick(brickImage(brick.getBrickLife(), brick.isMoving()),
+                        spriteHolder.addBrickToBeEdited(new Brick(brickImage(brick.getBrickLife(), brick.isMoving()),
                                 brick.isMoving(), brick.getBrickLife(), brick.getRow(), brick.getCol(), SECOND_DELAY));
                     }
-                    else {removedBricks.add(brick);}
                 }
-                spritesToBeRemoved.add(sprite);
             }
         }
-        for (Sprite sprite : spritesToBeRemoved) {
+        for (Sprite sprite : spriteHolder.getSpritesToBeRemoved()) {
             myRoot.getChildren().remove(sprite);
-            sprites.remove(sprite);
         }
-        spritesToBeRemoved.clear();
+        spriteHolder.removeAllSpritesToBeRemoved();
     }
 
     private void generateLevel(int level) {
         if(level==6) {gameEnd(true, SCREEN_WIDTH, SCREEN_HEIGHT, BACKGROUND);}
         else {
             this.level = level;
-            clearMap();
+            spriteHolder.clearMap();
             myPaddle.setWidthByLevel(level);
             paddleInit();
             generateBall(myPaddle.getX() + myPaddle.getWidth() / 2, myPaddle.getY(), FIRST_QUADRANT / 2,
@@ -282,47 +267,27 @@ public class BreakOutGame extends Application {
         double angle = Math.random() * (angle2 - angle1) + angle1;
         Ball ball = new Ball(stringToImage(BALL_IMAGE), angle, SECOND_DELAY);
         addSprite(ball);
-        balls.add(ball);
         ball.setX(xPos - ball.getWidth() / 2);
         ball.setY(yPos - ball.getRadius() * 2);
     }
 
     private void generateBrick(int row, int col, int life, boolean isMoving) {
         Brick brick = new Brick(brickImage(life, isMoving), isMoving, life, row, col, SECOND_DELAY);
-        if(brick.getBrickLife()>=0) {removableBricks.add(brick);}
+        if(brick.getBrickLife()>=0) {spriteHolder.addRemovableBrick(brick);}
         addSprite(brick);
     }
 
     private void editBricks() {
-        for(Brick brick : bricksToBeEdited) {
+        for(Brick brick : spriteHolder.getBricksToBeEdited()) {
             addSprite(brick);
-            removableBricks.add(brick);
+            spriteHolder.addRemovableBrick(brick);
         }
-        bricksToBeEdited.clear();
-    }
-
-    private void clearMap() {
-        for (Sprite sprite : sprites) {
-            if (!(sprite instanceof Paddle)) {
-                spritesToBeRemoved.add(sprite);
-                if (sprite instanceof Ball) {
-                    Ball ball = (Ball) sprite;
-                    balls.remove(ball);
-                }
-            }
-        }
-        removableBricks.clear();
-        bricksToBeEdited.clear();
-    }
-
-    private void clearBall() {
-        spritesToBeRemoved.addAll(balls);
-        balls.clear();
+        spriteHolder.clearBrickstoBeEdited();
     }
 
     private void generateBalls() {
-        Ball ball = balls.get(0);
-        if (balls.size() <= 3) {
+        Ball ball = spriteHolder.getAllBalls().get(0);
+        if (spriteHolder.getNumBalls() <= 3) {
             if (ball.getAngle() < FIRST_QUADRANT) {
                 generateBall(ball.getX() + ball.getWidth() / 2, ball.getY() + ball.getRadius() * 2,
                         ball.getAngle(), FIRST_QUADRANT * 1.5);
@@ -334,7 +299,7 @@ public class BreakOutGame extends Application {
                         FIRST_QUADRANT * 0.5, FIRST_QUADRANT * 1.5);
             }
         }
-        if (balls.size() <= 4) {
+        if (spriteHolder.getNumBalls() <= 4) {
             if (!ball.isMoving() || ball.getAngle() > FIRST_QUADRANT * 2) {
                 generateBall(ball.getX() + ball.getWidth() / 2, ball.getY() + ball.getRadius() * 2,
                         FIRST_QUADRANT * 0.5, FIRST_QUADRANT * 1.5);
@@ -349,7 +314,7 @@ public class BreakOutGame extends Application {
     //when the ball(s) is supposed to be on the paddle, the ball will move along the paddle when
     //LEFT or RIGHT key is pressed.
     private void moveBallAlongPaddle() {
-        for(Ball ball : balls) {
+        for(Ball ball : spriteHolder.getAllBalls()) {
             if(!ball.isMoving()) { ball.setX(myPaddle.getCenterX() - ball.getWidth() / 2); }
         }
     }
@@ -361,20 +326,20 @@ public class BreakOutGame extends Application {
     }
 
     private void resetPositions() {
-        clearBall();
+        spriteHolder.clearBall();
         paddleInit();
         generateBall(myPaddle.getCenterX(), myPaddle.getY(), FIRST_QUADRANT/2,
                 FIRST_QUADRANT + FIRST_QUADRANT/2);
     }
 
     private void moveBalls() {
-        for(Ball ball : balls) {
+        for(Ball ball : spriteHolder.getAllBalls()) {
             if(!(ball.isMoving())) { ball.startMoving(level); }
         }
     }
 
     private boolean allBallsMoving() {
-        for(Ball ball : balls) {
+        for(Ball ball : spriteHolder.getAllBalls()) {
             if(!(ball.isMoving())) { return false; }
         }
         return true;
@@ -480,10 +445,10 @@ public class BreakOutGame extends Application {
     }
 
     private void generateItem() {
-        for(Brick brick : removedBricks) {
+        for(Brick brick : spriteHolder.getRemovedBricks()) {
             generateItem(brick);
         }
-        removedBricks.clear();
+        spriteHolder.clearRemovedBricks();
     }
 
     private void generateItem(Brick brick) {
@@ -521,14 +486,7 @@ public class BreakOutGame extends Application {
             else if(type == 'L') {life++;}
             else if(type == 'B') {bombNum += 3;}
             else if(type == 'N') {generateBalls();}
-            else if(type == 'S') {changeBallSpeed(true);}
-        }
-    }
-
-    private void changeBallSpeed(boolean slow) {
-        for(Ball ball : balls) {
-            if(slow) {ball.setSpeedSlower(level);}
-            else {ball.setSpeedFaster(level);}
+            else if(type == 'S') {spriteHolder.changeBallSpeed(true, level);}
         }
     }
 
